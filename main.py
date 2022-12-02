@@ -1,5 +1,5 @@
 import nltk
-# nltk.download('punkt')
+nltk.download('punkt')
 from nltk.stem.lancaster import LancasterStemmer
 stemmer = LancasterStemmer()
 
@@ -82,4 +82,40 @@ try:
 except:
     model.fit(training, output, n_epoch=1000, batch_size=8, show_metric=True)
     model.save("model.tflearn")
+
+def bag_of_words(s, words):
+    bag = [0 for _ in range(len(words))]
+
+    s_words = nltk.word_tokenize(s)
+    s_words = [stemmer.stem(word.lower()) for word in s_words]
+
+    for se in s_words:
+        for i, w in enumerate(words):
+            if w == se:
+                bag[i] = (1)
+    
+    return np.array(bag)
+
+def chat():
+    print("You are chatting with Bisu! Type 'q' to quit.")
+    while True:
+        inp = input("You: ")
+        if inp.lower() == "q":
+            break
+
+        results = model.predict([bag_of_words(inp, words)])[0]
+        results_index = np.argmax(results)
+        tag = labels[results_index]
+        
+        if results[results_index] > 0.7:
+            for tg in data["intents"]:
+                if tg['tag'] == tag:
+                    responses = tg['responses']
+            
+            print(random.choice(responses))
+            print("\nType 'q' to end the conversation")
+        else:
+            print("I didn't get that. Please ask me sth else or end the chat.")
+
+chat()
 
